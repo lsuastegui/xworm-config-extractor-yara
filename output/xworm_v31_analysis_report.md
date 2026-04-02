@@ -1,32 +1,53 @@
-## Introduction
+# XWorm V3.1 — Static Configuration Extraction & Scalable Detection
 
-**XWorm** is a commodity **Remote Access Trojan (RAT)** written in VB.NET that has been actively used in commodity malware campaigns since at least 2022. It provides typical RAT capabilities such as:
+## Overview
 
-- Remote command execution
-- Keylogging
-- Webcam capture
-- File management
-- DDoS functionality
+Remote Access Trojans (RATs) continue to dominate real-world intrusion activity, largely due to their accessibility and modular design. Among them, **XWorm** has emerged as a widely adopted tool in low-to-mid sophistication campaigns, offering a rich feature set through a simple builder interface.
 
-Public reporting and community rules (e.g., SEKOIA YARA signatures) classify XWorm as a widely distributed commodity RAT, often delivered via phishing campaigns and loaders.
+Written in VB.NET, XWorm provides operators with capabilities such as:
 
-Additionally, this research was validated against a dataset of **100+ XWorm V3.x samples** collected from multiple sources.
+- Remote command execution  
+- Keylogging and user activity monitoring  
+- Webcam and screen capture  
+- File management and plugin-based extensibility  
+- Distributed denial-of-service (DDoS) functionality  
 
-Each sample was processed using the extractor, and the resulting configurations were analyzed to identify consistent patterns across campaigns.
+Public reporting and community detection rules (including those from :contentReference[oaicite:1]{index=1}) consistently identify XWorm as a **commodity RAT actively used in the wild**, often distributed via phishing or commodity loaders.
 
-This allowed not only to confirm the reliability of the extraction method, but also to derive a set of **real-world Indicators of Compromise (IOCs)** at scale.
+---
 
-## Table of Contents
+## Key Observation
 
-- [Introduction](#introduction)
-- [Sample Overview](#sample-overview)
-- [Identifying the Malware Family](#identifying-the-malware-family)
-- [Static Analysis of .NET Metadata](#static-analysis-of-net-metadata)
-- [Decompiling the Malware](#decompiling-the-malware)
-- [Reversing the Encryption Scheme](#reversing-the-encryption-scheme)
-- [Configuration Extraction](#configuration-extraction)
-- [Scaling the Analysis](#scaling-the-analysis)
-- [Large-Scale Validation](#large-scale-validation)
-- [Detection Opportunities](#detection-opportunities)
-- [Conclusion](#conclusion)
-- [Appendix A — Extracted IOCs](#appendix-a--extracted-iocs)
+During analysis of multiple XWorm samples, a recurring pattern emerges:
+
+> The malware stores its Command & Control (C2) configuration as **encrypted strings inside the `.NET #US metadata stream`**
+
+Unlike many commodity RATs that rely on plaintext or resource-based storage, this approach:
+
+- Obscures configuration from basic string analysis  
+- Avoids obvious indicators in the binary  
+- Still remains **fully reversible via static analysis**  
+
+This design makes XWorm V3.x an ideal target for **repeatable configuration extraction at scale**.
+
+---
+
+## Objective
+
+This report focuses on a **XWorm V3.1 sample** and demonstrates how to:
+
+- Identify the malware and confirm its family  
+- Locate the encrypted configuration within .NET metadata  
+- Reverse the encryption routine used by the malware  
+- Extract the full C2 configuration without execution  
+- Scale the process using automated tooling  
+
+In addition, the methodology is validated against a dataset of:
+
+> **100+ XWorm V3.x samples**, confirming that the extraction technique generalizes across multiple campaigns.
+
+---
+
+## Analytical Approach
+
+The analysis follows a structured workflow designed for reproducibility:
