@@ -12,7 +12,7 @@ Written in VB.NET, XWorm provides operators with capabilities such as:
 - File management and plugin-based extensibility  
 - Distributed denial-of-service (DDoS) functionality  
 
-Public reporting and community detection rules (including those from :contentReference[oaicite:1]{index=1}) consistently identify XWorm as a **commodity RAT actively used in the wild**, often distributed via phishing or commodity loaders.
+Public reporting and community detection rules consistently identify XWorm as a **commodity RAT actively used in the wild**, often distributed via phishing or commodity loaders.
 
 ---
 
