@@ -2,52 +2,76 @@
 
 ## Overview
 
-Remote Access Trojans (RATs) continue to dominate real-world intrusion activity, largely due to their accessibility and modular design. Among them, **XWorm** has emerged as a widely adopted tool in low-to-mid sophistication campaigns, offering a rich feature set through a simple builder interface.
+Commodity Remote Access Trojans (RATs) remain one of the most prevalent threats in real-world environments. Among them, **XWorm** has gained widespread adoption due to its accessibility, builder availability, and extensive feature set.
 
 Written in VB.NET, XWorm provides operators with capabilities such as:
 
 - Remote command execution  
-- Keylogging and user activity monitoring  
+- Keylogging and activity monitoring  
 - Webcam and screen capture  
-- File management and plugin-based extensibility  
-- Distributed denial-of-service (DDoS) functionality  
+- File management and plugin execution  
+- DDoS functionality  
 
-Public reporting and community detection rules consistently identify XWorm as a **commodity RAT actively used in the wild**, often distributed via phishing or commodity loaders.
+Public reporting and detection rules (including those from :contentReference[oaicite:0]{index=0}) consistently classify XWorm as a **commodity RAT actively used in the wild**, commonly delivered via phishing campaigns and commodity loaders.
 
 ---
 
 ## Key Observation
 
-During analysis of multiple XWorm samples, a recurring pattern emerges:
+Across multiple samples, XWorm V3.x exhibits a consistent pattern:
 
-> The malware stores its Command & Control (C2) configuration as **encrypted strings inside the `.NET #US metadata stream`**
+> The malware stores its Command & Control (C2) configuration as **encrypted Base64 strings inside the `.NET #US metadata stream`**
 
-Unlike many commodity RATs that rely on plaintext or resource-based storage, this approach:
+This approach:
 
-- Obscures configuration from basic string analysis  
-- Avoids obvious indicators in the binary  
-- Still remains **fully reversible via static analysis**  
-
-This design makes XWorm V3.x an ideal target for **repeatable configuration extraction at scale**.
+- Hides configuration from basic string analysis  
+- Avoids obvious plaintext indicators  
+- Remains fully reversible through static analysis  
 
 ---
 
 ## Objective
 
-This report focuses on a **XWorm V3.1 sample** and demonstrates how to:
+This analysis demonstrates how to:
 
-- Identify the malware and confirm its family  
-- Locate the encrypted configuration within .NET metadata  
+- Identify a XWorm sample and confirm its family  
+- Locate encrypted configuration data within .NET metadata  
 - Reverse the encryption routine used by the malware  
-- Extract the full C2 configuration without execution  
-- Scale the process using automated tooling  
+- Extract the full C2 configuration without executing the binary  
+- Scale the approach using automated tooling  
 
-In addition, the methodology is validated against a dataset of:
+The methodology is validated against a dataset of:
 
-> **100+ XWorm V3.x samples**, confirming that the extraction technique generalizes across multiple campaigns.
+> **100+ XWorm V3.x samples**, confirming that the technique generalizes across multiple campaigns.
 
 ---
 
-## Analytical Approach
+## Static Analysis
 
-The analysis follows a structured workflow designed for reproducibility:
+### Sample Overview & Identification
+
+The sample analyzed in this report:
+
+| Property | Value |
+|---|---|
+| SHA256 | `cdde3b2650c951e774a8694208c0d151e91b40db5d21da3d790d88ebd702edec` |
+| Internal Name | `XClient.exe` |
+| File Type | .NET PE (VB.NET) |
+| Compile Time | 2026-04-01 |
+| Family | XWorm (v3.x) |
+
+<p align="center">
+  <img src="../images/file_identification.png" width="700">
+</p>
+<p align="center"><em>Figure 1 — File identification and hash verification</em></p>
+
+Initial triage confirms that the binary is a **.NET assembly compiled in VB.NET**, a common choice for commodity malware due to rapid development and compatibility with obfuscation frameworks.
+
+---
+
+### Family Identification
+
+Using Detect-It-Easy (`diec`), the sample is classified as:
+
+```json
+"Malware: XWorm(3.0-5.0)"
