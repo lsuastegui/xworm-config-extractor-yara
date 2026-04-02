@@ -1,4 +1,4 @@
-XWorm V3.1 Static Analysis
+### XWorm V3.1 Static Analysis
 ## Introduction
 
 **XWorm** is a commodity **Remote Access Trojan (RAT)** written in VB.NET that has been actively used in commodity malware campaigns since at least 2022. It provides typical RAT capabilities such as:
