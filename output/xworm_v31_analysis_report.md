@@ -15,3 +15,18 @@ Additionally, this research was validated against a dataset of **100+ XWorm V3.x
 Each sample was processed using the extractor, and the resulting configurations were analyzed to identify consistent patterns across campaigns.
 
 This allowed not only to confirm the reliability of the extraction method, but also to derive a set of **real-world Indicators of Compromise (IOCs)** at scale.
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Sample Overview](#sample-overview)
+- [Identifying the Malware Family](#identifying-the-malware-family)
+- [Static Analysis of .NET Metadata](#static-analysis-of-net-metadata)
+- [Decompiling the Malware](#decompiling-the-malware)
+- [Reversing the Encryption Scheme](#reversing-the-encryption-scheme)
+- [Configuration Extraction](#configuration-extraction)
+- [Scaling the Analysis](#scaling-the-analysis)
+- [Large-Scale Validation](#large-scale-validation)
+- [Detection Opportunities](#detection-opportunities)
+- [Conclusion](#conclusion)
+- [Appendix A — Extracted IOCs](#appendix-a--extracted-iocs)
