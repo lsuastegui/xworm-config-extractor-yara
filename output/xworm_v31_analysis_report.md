@@ -2,9 +2,9 @@
 
 ## Overview
 
-Commodity Remote Access Trojans (RATs) remain one of the most prevalent threats in real-world environments. Among them, **XWorm** has gained widespread adoption due to its accessibility, builder availability, and extensive feature set.
+**XWorm** is a widely used Remote Access Trojan (RAT) that has been actively observed in campaigns since at least 2022. It is commonly distributed through phishing emails and multi-stage loaders, and is frequently sold or shared in underground forums, making it accessible to a broad range of threat actors.
 
-Written in VB.NET, XWorm provides operators with capabilities such as:
+Written in VB.NET, XWorm provides operators with a full set of remote control capabilities:
 
 - Remote command execution  
 - Keylogging and activity monitoring  
@@ -12,8 +12,7 @@ Written in VB.NET, XWorm provides operators with capabilities such as:
 - File management and plugin execution  
 - DDoS functionality  
 
-Public reporting and detection rules (including those from :contentReference[oaicite:0]{index=0}) consistently classify XWorm as a **commodity RAT actively used in the wild**, commonly delivered via phishing campaigns and commodity loaders.
-
+XWorm infections have been observed across a wide range of targets, including small businesses and enterprise environments. Once deployed, it provides attackers with full remote access to the infected system, enabling data theft, surveillance, and further payload delivery.
 ---
 
 ## Key Observation
