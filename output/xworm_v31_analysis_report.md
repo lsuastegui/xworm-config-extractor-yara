@@ -75,3 +75,21 @@ Malcat also provides an initial classification of the sample:
 This classification indicates that the sample likely belongs to the **XWorm family**. While this provides a strong initial signal, the attribution will be validated in the following steps by analyzing the binary structure, .NET metadata, and embedded artifacts.
 
 ---
+
+### .NET Metadata Inspection
+
+After confirming the sample identity, the next step is to inspect its **.NET metadata**, which is where XWorm stores critical runtime data.
+
+Unlike traditional malware that relies on resources or plaintext strings, XWorm leverages internal .NET structures to hide its configuration.
+
+Two metadata streams are particularly relevant:
+
+- `#Strings` → class names, method names, identifiers  
+- `#US` → user-defined runtime strings (UTF-16)  
+
+<p align="center">
+  <img src="../images/dotnet_us_stream.png" width="700">
+</p>
+<p align="center"><em>Figure 3 — .NET #US stream containing runtime strings</em></p>
+
+---
