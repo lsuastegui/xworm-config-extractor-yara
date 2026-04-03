@@ -60,7 +60,7 @@ The sample analyzed in this report:
 | Family | XWorm (v3.x) |
 
 <p align="center">
-  <img src="../images/file_identification.png" width="700">
+  <img src="../images/malcat_fileidentification.png" width="700">
 </p>
 <p align="center"><em>Figure 1 — File identification and hash verification</em></p>
 
