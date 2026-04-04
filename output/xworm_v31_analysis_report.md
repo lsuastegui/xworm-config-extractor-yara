@@ -208,7 +208,7 @@ If the correct key is used, the decrypted value resolves to the C2 host.
 While the manual approach using CyberChef is useful to understand the decryption process, it does not scale when analyzing large numbers of samples.
 
 To address this, the full workflow was automated in the following tool:
-[xworm-v3x-config-extractor-yara](https://github.com/lsuastegui/xworm-config-extractor-yara)
+[xworm-config-extractor-yara](https://github.com/lsuastegui/xworm-config-extractor-yara)
 
 ## Infrastructure Analysis (Cross-Sample Observations)
 To analyze infrastructure at scale, the extractor was executed across a dataset of 100+ XWorm samples, recovering one C2 endpoint per sample. The results were then aggregated and deduplicated.
