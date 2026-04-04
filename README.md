@@ -146,4 +146,4 @@ Both tools share the same constraints:
 
 ## References
 
-- [XWorm analysis report](output/xworm_v31_analysis_report.md)
+- [XWorm analysis report](output/xworm_analysis_report.md)
