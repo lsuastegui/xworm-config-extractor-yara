@@ -120,11 +120,26 @@ According to the decompiled code, the decryption routine works as follows:
 </p>
 <p align="center"><em>Figure 4 — XWorm AES decryption routine showing MD5-based key derivation and ECB mode</em></p>
 
-- Compute the MD5 of the mutex
-- Build a 32-byte AES key
-- Decrypt the Base64 ciphertext using AES-256-ECB
-- Remove the padding
+Each step of the decryption routine can be directly observed in the code:
 
+- **MD5 key derivation**  
+  The mutex (`Settings.Mutex`) is hashed using `MD5CryptoServiceProvider.ComputeHash(...)`.
+
+- **AES-256 key construction**  
+  A 32-byte array is created, where the MD5 value is copied twice with an overlap at offset 15:
+  ```csharp
+  Array.Copy(array2, 0, array, 0, 16);
+  Array.Copy(array2, 0, array, 15, 16);
+   ```
+- **AES configuration**  
+  The malware uses RijndaelManaged with key size 256 bits and ECB mode.
+
+- **Decryption process**
+  The resulting bytes are converted to UTF-8, with padding implicitly removed.  
+  ```csharp
+  TransformFinalBlock(...)
+   ```
+  
 The important detail is that the key derivation is not a normal MD5 repeat.
 Instead, the malware creates the key with an overlapping copy:
 
