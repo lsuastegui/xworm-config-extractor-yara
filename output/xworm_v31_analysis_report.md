@@ -1,4 +1,4 @@
-# XWorm V3.1 — Static Configuration Extraction & Scalable Detection
+# XWorm V3.1 - Static Configuration Extraction & Scalable Detection
 
 ## Overview
 
@@ -78,18 +78,123 @@ This classification indicates that the sample likely belongs to the **XWorm fami
 
 ### .NET Metadata Inspection
 
-After confirming the sample identity, the next step is to inspect its **.NET metadata**, which is where XWorm stores critical runtime data.
+After the initial identification, the next step is to inspect the **.NET metadata**, since this is where XWorm stores critical runtime data.
 
-Unlike traditional malware that relies on resources or plaintext strings, XWorm leverages internal .NET structures to hide its configuration.
+To extract this information, the sample was parsed using:
 
-Two metadata streams are particularly relevant:
+```bash
+dotnetfile_dump.py /full/path/to/sample.exe
+```
+The most relevant data is found in the #US stream, which contains runtime strings embedded directly in the binary.
 
-- `#Strings` → class names, method names, identifiers  
-- `#US` → user-defined runtime strings (UTF-16)  
+<p align="center"> <img src="../images/dotnet_us_stream.png" width="700"> </p> <p align="center"><em>Figure 3 — #US stream showing runtime strings and embedded configuration</em></p>
 
-<p align="center">
-  <img src="../images/dotnet_us_stream.png" width="700">
-</p>
-<p align="center"><em>Figure 3 — .NET #US stream containing runtime strings</em></p>
+Several important indicators are immediately visible:
+
+| Indicator |
+|----------|
+| XWorm V3.1 |
+| PING! CLOSE uninstall update |
+| Select * from AntivirusProduct |
+
+These strings confirm the malware family and version (XWorm V3.1), the presence of a command-based C2 protocol, the use of PowerShell for execution, and antivirus enumeration via WMI.
+
+More importantly, the stream also contains the following values:
+| Value |
+|------|
+| SWFLV/NRfIruczEj9oEeBxLtDTqqia3/zi4lSFoSssk= |
+| WnA8UsDYnWBSbse65KYuuA== |
+| AKS/WHhi0fZXObuzsUWdiA== |
+| kEUgW2z1dwV1sFO1jZYJsg== |
+| Js2bLkwFE+ORTWNFTsKQ+A== |
+| 5qjCFbbcx5iGc65S |
+
+These values are significant:
+
+- The Base64 strings correspond to encrypted configuration values
+- The plaintext value (5qjCFbbcx5iGc65S) is the Mutex
+
+  This is sufficient to proceed with reversing the encryption routine and recovering the full configuration without executing the malware.
 
 ---
+
+## Decryption Example with CyberChef
+To demonstrate the decryption process manually, the following example uses:
+
+- Mutex: 5qjCFbbcx5iGc65S
+- Ciphertext (Base64): SWFLV/NRfIruczEj9oEeBxLtDTqqia3/zi4lSFoSssk=
+
+According to the decompiled code, the decryption routine works as follows:
+
+Compute the MD5 of the mutex
+Build a 32-byte AES key
+Decrypt the Base64 ciphertext using AES-256-ECB
+Remove the padding
+
+The important detail is that the key derivation is not a normal MD5 repeat.
+Instead, the malware creates the key with an overlapping copy:
+
+```bash
+key[0:16]  = MD5(Mutex)
+key[15:31] = MD5(Mutex)
+key[31]    = 0x00
+```
+This means the second copy starts at offset 15, so one byte overlaps.
+
+---
+### Step 1 - Compute the MD5 of the Mutex
+In CyberChef, start with this input:
+```bash
+5qjCFbbcx5iGc65S
+```
+Use this recipe:
+```bash
+MD5
+To Hex
+```
+This gives the 16-byte MD5 value used as the basis for the AES key.
+
+### Step 2 - Build the AES Key
+Once the MD5 is obtained, the malware constructs a 32-byte key like this:
+
+- bytes `0..15` = MD5
+- bytes `15..30` = MD5 again
+- byte `31` = `00`
+This is important because it is not a simple `MD5 + MD5` concatenation.
+The second copy begins at byte 15, which creates an overlap.
+
+For example, if the MD5 were:
+```bash
+aa bb cc dd ee ff 11 22 33 44 55 66 77 88 99 00
+```
+the final key would look like:
+```bash
+aa bb cc dd ee ff 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff 11 22 33 44 55 66 77 88 99 00 00
+```
+In practice, the easiest approach is to calculate the final key outside CyberChef and then paste it into the AES operation.
+
+
+### Step 3 - Decrypt the Ciphertext in CyberChef
+Now use the encrypted Host value:
+```bash
+SWFLV/NRfIruczEj9oEeBxLtDTqqia3/zi4lSFoSssk=
+```
+Use the following CyberChef recipe:
+```bash
+From Base64
+AES Decrypt
+Decode text
+```
+Configure AES Decrypt as follows:
+
+- Mode: ECB
+- Key: derived 32-byte key
+- Key format: Hex
+- IV: empty
+- Padding: remove PKCS#7 padding if needed
+
+If the correct key is used, the decrypted value resolves to the C2 host.
+```text
+8.tcp.cpolar.top
+```
+<p align="center"> <img src="../images/cyberchef_xworm_host_decrypt.png" width="700"> </p> <p align="center"><em>Figure — CyberChef decryption process showing AES-256-ECB configuration and recovered C2 host</em></p> ```
