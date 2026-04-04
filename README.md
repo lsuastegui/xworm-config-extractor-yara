@@ -1,22 +1,21 @@
-# XWorm V3.x Config Extractor + YARA Detection
+# XWorm Config Extractor + YARA Compatibility Detection
 
-Static analysis tools for **XWorm V3.x** — a VB.NET RAT that stores its C2
-configuration encrypted inside the `.NET #US` metadata stream.
+Static analysis tools for **XWorm**, a VB.NET-based RAT that stores its C2 configuration encrypted inside the `.NET #US` metadata stream. It supports multiple XWorm versions (observed across V3–V7), leveraging the consistent configuration format and encryption scheme used across variants.
 
-The YARA rule tells you whether the extractor will work **before you run it**.
+The YARA rule determines whether a sample implements the configuration scheme required by the extractor before execution.
 
 ## Files
 
 | File | Purpose |
 |---|---|
 | `xworm_extractor.py` | Decrypts and prints the C2 configuration |
-| `xworm_v3x_extractor_compatible.yar` | Detects samples the extractor can handle |
+| `xworm_extractor_compatible.yar` | Detects samples the extractor can handle |
 
 ## Quick start
 
 ```bash
 # Step 1 — check if the extractor will work on your sample
-yara xworm_v3x_extractor_compatible.yar <sample.exe>
+yara xworm_extractor_compatible.yar <sample.exe>
 
 # Step 2 — if the rule matched, extract the config
 python3 xworm_extractor.py <sample.exe>
@@ -27,14 +26,14 @@ sample (see [Limitations](#limitations)).
 
 ## YARA rule
 
-**File:** `xworm_v3x_extractor_compatible.yar`
+**File:** `xworm_extractor_compatible.yar`
 
 Contains two rules:
 
-### `XWorm_V3x_Extractor_Compatible` — use this one
+### `XWorm_Extractor_Compatible` — use this one
 
-Matches any unobfuscated XWorm V3.x sample that uses the AES-256-ECB / MD5
-encryption scheme the extractor targets. A match means the extractor is
+Matches any unobfuscated XWorm sample that implements the configuration
+storage and AES-256-ECB / MD5 encryption scheme targeted by the extractor. A match means the extractor is
 expected to recover the full config.
 
 **What it looks for:**
@@ -47,7 +46,7 @@ expected to recover the full config.
 | `MD5CryptoServiceProvider` | `.NET #Strings stream` | Key derivation primitive |
 | `USBNM` | `.NET #Strings stream` | Settings class field — confirms the config structure |
 | `ClientSocket` | `.NET #Strings stream` | C2 communication class |
-| `XWorm V3` + commands | `.NET #US stream (UTF-16LE)` | Runtime strings — version + C2 commands |
+| `XWorm version strings` + commands | `.NET #US stream (UTF-16LE)` | Runtime strings — version + C2 commands |
 
 ### `XWorm_V31_Exact_Build` — supplement only
 
@@ -67,6 +66,8 @@ pip install cryptography
 ```
 
 ### How it works
+
+This approach enables fully static extraction without executing the sample:
 
 1. Parses the `.NET #US` metadata stream directly from the PE binary — no
    external tools needed.
@@ -101,7 +102,7 @@ python3 xworm_extractor.py sample.exe --verbose
 
 ```
   ╔══════════════════════════════════════════════════╗
-  ║      XWorm V3.x Configuration Extractor          ║
+  ║      XWorm Configuration Extractor               ║
   ║      Method : static / .NET #US stream parsing   ║
   ╚══════════════════════════════════════════════════╝
 
@@ -130,19 +131,13 @@ Both tools share the same constraints:
 
 | Condition | Behaviour |
 |---|---|
-| **XWorm V5+ / V6+** — different cipher or KDF | YARA rule will not match; extractor will fail with a clear error |
-| **Obfuscated build** (ConfuserEx, .NET Reactor) | YARA rule will not match; `#Strings` / `#US` streams are empty or encrypted |
-| **Mutex looks like Base64** | Extractor brute-forces all candidates and picks the highest-scoring one |
+| **Modified encryption scheme** (custom builds or future variants) | YARA rule will not match; extractor may fail |
+| **Obfuscated build** (ConfuserEx, .NET Reactor) | YARA rule will not match; `#Strings` / `#US` streams may be encrypted or altered |
+| **Non-standard configuration format** | Extractor may fail to correctly map fields |
+| **Mutex looks like Base64** | Extractor brute-forces candidates and selects the highest-scoring result |
 | **`cryptography` package missing** | Extractor fails immediately with install instructions |
 
-> The YARA rule is the gate: if it does not match, do not expect the
-> extractor to succeed.
-
-## Tested on
-
-| SHA-256 | Family | Version | Result |
-|---|---|---|---|
-| `cdde3b26...edec` | XWorm | V3.1 | Full config recovered |
+> The YARA rule acts as a compatibility gate: if it does not match, the extractor is not expected to succeed.
 
 ## References
 
