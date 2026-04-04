@@ -5,16 +5,12 @@ configuration encrypted inside the `.NET #US` metadata stream.
 
 The YARA rule tells you whether the extractor will work **before you run it**.
 
----
-
 ## Files
 
 | File | Purpose |
 |---|---|
 | `xworm_extractor.py` | Decrypts and prints the C2 configuration |
 | `xworm_v3x_extractor_compatible.yar` | Detects samples the extractor can handle |
-
----
 
 ## Quick start
 
@@ -28,8 +24,6 @@ python3 xworm_extractor.py <sample.exe>
 
 If the YARA rule produces **no output**, the extractor will not work on that
 sample (see [Limitations](#limitations)).
-
----
 
 ## YARA rule
 
@@ -61,8 +55,6 @@ Matches the exact V3.1 build variant using the hardcoded version string
 (`XWorm V3.1`), assembly name (`XClient`), and builder GUID. Useful for
 pivoting on a sample corpus. **Do not use this rule alone** to decide whether
 to run the extractor — use the main rule for that.
-
----
 
 ## Config extractor
 
@@ -159,5 +151,3 @@ Both tools share the same constraints:
 ## References
 
 - [XWorm analysis report](output/xworm_v31_analysis_report.md)
-- YARA rule `SEKOIA_Rat_Win_Xworm_V3` (independent confirmation)
-- diec detection: `Malware: XWorm(3.0-5.0)`
