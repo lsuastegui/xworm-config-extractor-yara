@@ -1,5 +1,3 @@
-# XWorm V3.1 - Static Configuration Extraction & Scalable Detection
-
 ## Overview
 
 **XWorm** is a widely used Remote Access Trojan (RAT) that has been actively observed in campaigns since at least 2022. It is commonly distributed through phishing emails and multi-stage loaders, and is frequently sold or shared in underground forums, making it accessible to a broad range of threat actors.
@@ -14,8 +12,6 @@ Written in VB.NET, XWorm provides operators with a full set of remote control ca
 
 XWorm infections have been observed across a wide range of targets, including small businesses and enterprise environments. Once deployed, it provides attackers with full remote access to the infected system, enabling data theft, surveillance, and further payload delivery.
 
----
-
 ## Key Observation
 
 Across multiple samples, XWorm V3.x exhibits a consistent pattern:
@@ -27,8 +23,6 @@ This approach:
 - Hides configuration from basic string analysis  
 - Avoids obvious plaintext indicators  
 - Remains fully reversible through static analysis  
-
----
 
 ## Objective
 
@@ -43,8 +37,6 @@ This analysis demonstrates how to:
 The methodology is validated against a dataset of:
 
 > **100+ XWorm V3.x samples**, confirming that the technique generalizes across multiple campaigns.
-
----
 
 ## Static Analysis
 
@@ -73,8 +65,6 @@ Malcat also provides an initial classification of the sample:
 <p align="center"><em>Figure 2 — Malcat classification identifying the sample as XWorm</em></p>
 
 This classification indicates that the sample likely belongs to the **XWorm family**. While this provides a strong initial signal, the attribution will be validated in the following steps by analyzing the binary structure, .NET metadata, and embedded artifacts.
-
----
 
 ### .NET Metadata Inspection
 
@@ -125,11 +115,15 @@ To demonstrate the decryption process manually, the following example uses:
 - Ciphertext (Base64): SWFLV/NRfIruczEj9oEeBxLtDTqqia3/zi4lSFoSssk=
 
 According to the decompiled code, the decryption routine works as follows:
+<p align="center">
+  <img src="../images/xworm_aes_decrypt.png" width="700">
+</p>
+<p align="center"><em>Figure 4 — XWorm AES decryption routine showing MD5-based key derivation and ECB mode</em></p>
 
-Compute the MD5 of the mutex
-Build a 32-byte AES key
-Decrypt the Base64 ciphertext using AES-256-ECB
-Remove the padding
+- Compute the MD5 of the mutex
+- Build a 32-byte AES key
+- Decrypt the Base64 ciphertext using AES-256-ECB
+- Remove the padding
 
 The important detail is that the key derivation is not a normal MD5 repeat.
 Instead, the malware creates the key with an overlapping copy:
@@ -141,7 +135,6 @@ key[31]    = 0x00
 ```
 This means the second copy starts at offset 15, so one byte overlaps.
 
----
 ### Step 1 - Compute the MD5 of the Mutex
 In CyberChef, start with this input:
 ```bash
@@ -197,4 +190,4 @@ If the correct key is used, the decrypted value resolves to the C2 host.
 ```text
 8.tcp.cpolar.top
  ```
-<p align="center"> <img src="../images/cyberchef_xworm_host_decrypt.png" width="700"> </p> <p align="center"><em>Figure — CyberChef decryption process showing AES-256-ECB configuration and recovered C2 host</em></p>
+<p align="center"> <img src="../images/cyberchef_xworm_host_decrypt.png" width="700"> </p> <p align="center"><em>Figure 5 — CyberChef decryption process showing AES-256-ECB configuration and recovered C2 host</em></p>
