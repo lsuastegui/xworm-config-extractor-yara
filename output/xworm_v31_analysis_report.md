@@ -34,10 +34,6 @@ This analysis demonstrates how to:
 - Extract the full C2 configuration without executing the binary  
 - Scale the approach using automated tooling  
 
-The methodology is validated against a dataset of:
-
-> **100+ XWorm V3.x samples**, confirming that the technique generalizes across multiple campaigns.
-
 ## Static Analysis
 
 ### Sample Overview & Identification
@@ -214,4 +210,31 @@ While the manual approach using CyberChef is useful to understand the decryption
 To address this, the full workflow was automated in the following tool:
 [xworm-v3x-config-extractor-yara](https://github.com/lsuastegui/xworm-v3x-config-extractor-yara)
 
+## Infrastructure Analysis (Cross-Sample Observations)
+To analyze infrastructure at scale, the extractor was executed across 100+ XWorm V3.x samples, recovering a single C2 endpoint from each sample.
+```bash
+for f in *; do
+    file "$f" | grep -q "PE32" && \
+    python3 xworm_extractor.py "$f" 2>/dev/null | \
+    grep "C2 endpoint" | cut -d':' -f2- | xargs
+done | sort | uniq
+```
+### Observed Infrastructure Patterns
 
+| Category | Description | Examples | Implication |
+|----------|------------|----------|-------------|
+| Tunneling Services | Use of third-party NAT traversal services to expose local services | cpolar, pinggy, localto, portmap.host, ply.gg | Bypasses NAT/firewalls and enables rapid deployment |
+| Dynamic DNS (DDNS) | Domains resolving to frequently changing IP addresses | duckdns.org, bounceme.net, ddns.com.br | Enables IP rotation and persistence |
+| Randomized Subdomains | High-entropy or auto-generated hostnames | q4k7uphvys.localto.net, g6rfsuscw9.localto.net | Indicates automated infrastructure provisioning |
+| Public Platforms | Use of legitimate services for staging or configuration delivery | pastebin.com | Adds indirection and complicates detection |
+
+### Key Takeaways
+
+These patterns indicate that XWorm operators rely on:
+
+- Low-cost and disposable infrastructure  
+- Rapid provisioning and replacement of C2 endpoints  
+- Third-party services to avoid direct exposure  
+- Flexible configurations that support rotation and fallback  
+
+As a result, traditional IOC-based detection is ineffective in this context. Detection strategies should instead focus on behavioral patterns and infrastructure usage, such as tunneling services and dynamic DNS abuse.
