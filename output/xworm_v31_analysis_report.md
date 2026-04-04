@@ -206,3 +206,12 @@ If the correct key is used, the decrypted value resolves to the C2 host.
 8.tcp.cpolar.top
  ```
 <p align="center"> <img src="../images/cyberchef_xworm_host_decrypt.png" width="700"> </p> <p align="center"><em>Figure 5 — CyberChef decryption process showing AES-256-ECB configuration and recovered C2 host</em></p>
+
+## Automating Configuration Extraction
+
+While the manual approach using CyberChef is useful to understand the decryption process, it does not scale when analyzing large numbers of samples.
+
+To address this, the full workflow was automated in the following tool:
+[xworm-v3x-config-extractor-yara](README.md)
+
+
