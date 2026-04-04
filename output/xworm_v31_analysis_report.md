@@ -196,5 +196,5 @@ Configure AES Decrypt as follows:
 If the correct key is used, the decrypted value resolves to the C2 host.
 ```text
 8.tcp.cpolar.top
-```
-<p align="center"> <img src="../images/cyberchef_xworm_host_decrypt.png" width="700"> </p> <p align="center"><em>Figure — CyberChef decryption process showing AES-256-ECB configuration and recovered C2 host</em></p> ```
+ ```
+<p align="center"> <img src="../images/cyberchef_xworm_host_decrypt.png" width="700"> </p> <p align="center"><em>Figure — CyberChef decryption process showing AES-256-ECB configuration and recovered C2 host</em></p>
