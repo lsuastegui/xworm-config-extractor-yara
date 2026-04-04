@@ -138,15 +138,11 @@ Both tools share the same constraints:
 > The YARA rule is the gate: if it does not match, do not expect the
 > extractor to succeed.
 
----
-
 ## Tested on
 
 | SHA-256 | Family | Version | Result |
 |---|---|---|---|
 | `cdde3b26...edec` | XWorm | V3.1 | Full config recovered |
-
----
 
 ## References
 
