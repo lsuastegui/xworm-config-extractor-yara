@@ -13,8 +13,7 @@ Written in VB.NET, XWorm provides operators with a full set of remote control ca
 XWorm infections have been observed across a wide range of targets, including small businesses and enterprise environments. Once deployed, it provides attackers with full remote access to the infected system, enabling data theft, surveillance, and further payload delivery.
 
 ## Key Observation
-
-Across multiple samples, XWorm V3.x exhibits a consistent pattern:
+Across multiple samples spanning several XWorm versions and campaigns, a consistent configuration storage pattern is observed, suggesting that the underlying design has remained stable across iterations of the malware:
 
 > The malware stores its Command & Control (C2) configuration as **encrypted Base64 strings inside the `.NET #US metadata stream`**
 
@@ -33,6 +32,7 @@ This analysis demonstrates how to:
 - Reverse the encryption routine used by the malware  
 - Extract the full C2 configuration without executing the binary  
 - Scale the approach using automated tooling  
+- Analyze infrastructure patterns across multiple samples
 
 ## Static Analysis
 
@@ -131,7 +131,7 @@ Each step of the decryption routine can be directly observed in the code:
   The malware uses RijndaelManaged with key size 256 bits and ECB mode.
 
 - **Decryption process**
-  The resulting bytes are converted to UTF-8, with padding implicitly removed.  
+  The resulting bytes are converted to UTF-8, with PKCS#7 padding removed as part of the decryption process.  
   ```csharp
   TransformFinalBlock(...)
    ```
@@ -211,7 +211,7 @@ To address this, the full workflow was automated in the following tool:
 [xworm-v3x-config-extractor-yara](https://github.com/lsuastegui/xworm-v3x-config-extractor-yara)
 
 ## Infrastructure Analysis (Cross-Sample Observations)
-To analyze infrastructure at scale, the extractor was executed across 100+ XWorm V3.x samples, recovering a single C2 endpoint from each sample.
+To analyze infrastructure at scale, the extractor was executed across a dataset of 100+ XWorm samples, recovering one C2 endpoint per sample. The results were then aggregated and deduplicated.
 ```bash
 for f in *; do
     file "$f" | grep -q "PE32" && \
@@ -219,7 +219,8 @@ for f in *; do
     grep "C2 endpoint" | cut -d':' -f2- | xargs
 done | sort | uniq
 ```
-### Observed Infrastructure Patterns
+### Observed Infrastructure and Builder Patterns
+The extracted configuration data and builder artifacts reveal consistent patterns not only in infrastructure usage, but also in how the malware is built, distributed, and operated across campaigns.
 
 | Category | Description | Examples | Implication |
 |----------|------------|----------|-------------|
@@ -227,14 +228,21 @@ done | sort | uniq
 | Dynamic DNS (DDNS) | Domains resolving to frequently changing IP addresses | duckdns.org, bounceme.net, ddns.com.br | Enables IP rotation and persistence |
 | Randomized Subdomains | High-entropy or auto-generated hostnames | q4k7uphvys.localto.net, g6rfsuscw9.localto.net | Indicates automated infrastructure provisioning |
 | Public Platforms | Use of legitimate services for staging or configuration delivery | pastebin.com | Adds indirection and complicates detection |
+| Version Distribution | Multiple XWorm versions observed across samples | V5.x, V6.x, V7.x | Indicates dataset spans multiple campaigns and timeframes |
+| Builder Attribution | References to builder sources and forks | c3lestial.fun, celestialproject.org, XHubTools | Suggests distribution through underground communities and builder reuse |
+| Operator Identifiers | Custom or user-defined values | PLEINPLEIN777, Hassanat, DDD | May reflect operator aliases, campaign names, or test artifacts |
+| Default Values | Common builder defaults reused across samples | USB.exe, Bind, TEST | Indicates low customization and widespread use of stock configurations |
+| Masquerading | Names mimicking legitimate processes or system components | Windows Defender Firewall, ms-update.exe | Basic evasion through deceptive naming |
 
 ### Key Takeaways
 
-These patterns indicate that XWorm operators rely on:
+The observed patterns indicate that XWorm operates as a commodity malware ecosystem, combining disposable infrastructure with widely distributed builders and low-cost operational practices.
 
-- Low-cost and disposable infrastructure  
-- Rapid provisioning and replacement of C2 endpoints  
-- Third-party services to avoid direct exposure  
-- Flexible configurations that support rotation and fallback  
+This model enables:
 
-As a result, traditional IOC-based detection is ineffective in this context. Detection strategies should instead focus on behavioral patterns and infrastructure usage, such as tunneling services and dynamic DNS abuse.
+- Rapid provisioning and rotation of C2 infrastructure  
+- Distribution through publicly available builders and forks  
+- Minimal operator effort through reuse of default configurations  
+- Evasion of static detection via dynamic DNS and tunneling services  
+
+As a result, traditional IOC-based detection is largely ineffective. Detection strategies should instead focus on behavioral patterns, infrastructure usage, and configuration artifacts shared across samples.
