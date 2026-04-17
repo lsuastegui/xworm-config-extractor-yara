@@ -219,6 +219,10 @@ for f in *; do
     grep "C2 endpoint" | cut -d':' -f2- | xargs
 done | sort | uniq
 ```
+<p align="center">
+  <img src="../images/dataset.gif" width="700">
+</p>
+
 ### Observed Infrastructure and Builder Patterns
 The extracted configuration data and builder artifacts reveal consistent patterns not only in infrastructure usage, but also in how the malware is built, distributed, and operated across campaigns.
 
